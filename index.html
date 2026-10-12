@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prueba · Excel Clase 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ======================= PANTALLA: CARGANDO ======================= -->
+<div id="screen-loading" class="screen active">
+  <div class="loader"></div>
+</div>
+
+<!-- ======================= PANTALLA: BLOQUEADO (ya hizo la prueba) ======================= -->
+<div id="screen-blocked" class="screen">
+  <div class="panel narrow">
+    <div class="kicker">Excel · Clase 3</div>
+    <h1>Ya realizaste esta prueba</h1>
+    <p class="lead" id="blocked-detail">Este dispositivo o red ya tiene un intento registrado para esta evaluación.</p>
+    <div class="infobox" id="blocked-info"></div>
+  </div>
+</div>
+
+<!-- ======================= PANTALLA: INSTRUCCIONES ======================= -->
+<div id="screen-instructions" class="screen">
+  <div class="panel">
+    <div class="kicker">Excel · Clase 3</div>
+    <h1>Prueba de Excel — Referencias y funciones básicas</h1>
+    <p class="lead">Esta prueba evalúa lo visto en la Clase 3: referencias relativas/absolutas, autorrelleno, funciones básicas, ordenar y filtrar datos, más un caso práctico real en Excel.</p>
+
+    <h3 class="subhead">Instrucciones</h3>
+    <ul class="tick">
+      <li>Tenés <strong>60 minutos</strong> en total desde que presionás "Comenzar". El cronómetro no se detiene si cerrás o recargás la página.</li>
+      <li>Es <strong>un único intento</strong> por persona. Una vez enviada la prueba, no se puede repetir.</li>
+      <li>Son <strong>20 preguntas de selección única</strong> y <strong>1 caso práctico más extenso</strong> que debés resolver en un archivo de Excel real y subir aquí mismo.</li>
+      <li>Si el tiempo se agota, la prueba se envía automáticamente con lo que hayas respondido hasta ese momento.</li>
+      <li>Revisá tu conexión a internet antes de empezar — la prueba necesita conexión para guardar tus respuestas.</li>
+    </ul>
+
+    <h3 class="subhead">Identificate</h3>
+    <div class="field">
+      <label for="input-name">Nombre completo</label>
+      <input type="text" id="input-name" placeholder="Ej. María Fernández Solís" autocomplete="name">
+    </div>
+
+    <div class="startrow">
+      <button id="btn-start" class="btn-primary" disabled>Comenzar prueba</button>
+      <span class="hint">El cronómetro empieza en el momento en que presionás este botón.</span>
+    </div>
+
+    <button id="btn-admin-link" class="link-admin">Acceso docente</button>
+  </div>
+</div>
+
+<!-- ======================= PANTALLA: PRUEBA ======================= -->
+<div id="screen-quiz" class="screen">
+  <div class="topbar">
+    <span class="mark">Excel · Clase 3</span>
+    <span class="student-name" id="quiz-student-name"></span>
+    <div class="timer" id="timer">60:00</div>
+  </div>
+
+  <form id="quiz-form" class="quizwrap">
+
+    <div id="questions-container"></div>
+
+    <section class="case-block">
+      <div class="kicker">Caso práctico · Excel real · 40 puntos</div>
+      <h2>Registro de ventas de una semana completa</h2>
+      <p class="body">
+        Sos el encargado de una pequeña tienda y tenés que dejar lista la planilla de ventas de una semana entera (3 productos x 7 días).
+        Descargá la plantilla, completala en Excel real usando todo lo visto en la Clase 3, y subí el archivo terminado aquí abajo.
+        Esta parte la revisa el profesor manualmente.
+      </p>
+      <ul class="tick">
+        <li><strong>Autorrelleno:</strong> completá la columna de fechas arrastrando desde la primera fecha para generar los 7 días de la semana.</li>
+        <li><strong>Referencia absoluta:</strong> calculá el Total de cada fila usando una referencia absoluta hacia la celda de descuento general.</li>
+        <li><strong>Funciones:</strong> calculá la venta más alta (MAX), la más baja (MIN), la cantidad de ventas registradas (CONTAR) y la cantidad de categorías distintas usadas (CONTARA).</li>
+        <li><strong>Ordenar:</strong> ordená toda la tabla de mayor a menor Total, seleccionando todas las columnas.</li>
+        <li><strong>Filtrar:</strong> dejá el filtro activado mostrando únicamente una categoría antes de guardar el archivo.</li>
+      </ul>
+      <a href="plantilla_caso_practico.xlsx" download class="btn-secondary dl">Descargar plantilla (.xlsx)</a>
+
+      <div class="field" style="margin-top:18px;">
+        <label for="input-file">Subí tu archivo terminado (.xlsx)</label>
+        <input type="file" id="input-file" accept=".xlsx">
+        <span class="filehint" id="file-chosen">Ningún archivo seleccionado</span>
+      </div>
+
+      <div class="field">
+        <label for="input-comment">Notas para el profesor (opcional)</label>
+        <textarea id="input-comment" rows="3" placeholder="Algo que quieras aclarar sobre tu solución..."></textarea>
+      </div>
+    </section>
+
+    <div class="submitrow">
+      <button type="submit" id="btn-submit" class="btn-primary">Enviar prueba</button>
+      <span class="hint">Revisá tus respuestas antes de enviar. No se puede editar después.</span>
+    </div>
+  </form>
+</div>
+
+<!-- ======================= PANTALLA: ENVIADO ======================= -->
+<div id="screen-done" class="screen">
+  <div class="panel narrow">
+    <div class="kicker">Excel · Clase 3</div>
+    <h1>Prueba enviada</h1>
+    <p class="lead">Gracias, <span id="done-name"></span>. Tu prueba quedó registrada correctamente.</p>
+    <div class="scorecard">
+      <div class="scorerow"><span>Preguntas de selección (automático)</span><strong id="done-auto">0 / 60</strong></div>
+      <div class="scorerow pending"><span>Caso práctico (revisión del profesor)</span><strong>Pendiente</strong></div>
+    </div>
+    <p class="body small">Tu profesor va a revisar el caso práctico y completar tu nota final. No es necesario que vuelvas a enviar nada.</p>
+  </div>
+</div>
+
+<!-- ======================= PANTALLA: ADMIN LOGIN ======================= -->
+<div id="screen-admin-login" class="screen">
+  <div class="panel narrow">
+    <div class="kicker">Panel docente</div>
+    <h1>Acceso docente</h1>
+    <p class="lead">Solo el profesor puede entrar aquí.</p>
+    <div class="field">
+      <label for="admin-email">Correo</label>
+      <input type="email" id="admin-email" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="admin-password">Contraseña</label>
+      <input type="password" id="admin-password" autocomplete="current-password">
+    </div>
+    <button id="btn-admin-login" class="btn-primary">Entrar</button>
+    <p class="error" id="admin-login-error"></p>
+    <button id="btn-admin-back" class="link-admin">← Volver a la prueba</button>
+  </div>
+</div>
+
+<!-- ======================= PANTALLA: ADMIN DASHBOARD ======================= -->
+<div id="screen-admin" class="screen">
+  <div class="topbar">
+    <span class="mark">Excel · Clase 3</span>
+    <span class="student-name">Panel docente · Anthony Mena</span>
+    <button id="btn-admin-logout" class="btn-secondary small">Salir</button>
+  </div>
+  <div class="adminwrap">
+    <div class="adminhead">
+      <h1>Resultados</h1>
+      <button id="btn-export-csv" class="btn-secondary">Exportar CSV</button>
+    </div>
+    <div class="adminstats" id="admin-stats"></div>
+    <div class="tablewrap">
+      <table id="admin-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Fecha</th>
+            <th>IP</th>
+            <th>Automático</th>
+            <th>Caso práctico</th>
+            <th>Total</th>
+            <th>Archivo</th>
+          </tr>
+        </thead>
+        <tbody id="admin-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="questions.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
