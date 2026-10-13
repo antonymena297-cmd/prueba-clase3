@@ -1,7 +1,7 @@
 // ============================================================
 // App — Prueba de Excel Clase 3
 // ============================================================
-const supabase = window.supabase.createClient(APP_CONFIG.SUPABASE_URL, APP_CONFIG.SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(APP_CONFIG.SUPABASE_URL, APP_CONFIG.SUPABASE_ANON_KEY);
 
 const screens = {
   loading: document.getElementById('screen-loading'),
@@ -90,7 +90,7 @@ btnStart.addEventListener('click', async () => {
   btnStart.textContent = 'Verificando...';
 
   // ¿Esta IP ya completó la prueba antes (en Supabase, no solo en este navegador)?
-  const { data: existing, error } = await supabase
+  const { data: existing, error } = await supabaseClient
     .from('intentos')
     .select('nombre, fecha, puntaje_auto')
     .eq('ip', currentIp)
@@ -223,11 +223,11 @@ async function submitQuiz(autoSubmitted) {
   if (file) {
     archivoNombre = file.name;
     const path = `${currentIp}_${Date.now()}_${sanitizeFilename(file.name)}`;
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseClient.storage
       .from(APP_CONFIG.STORAGE_BUCKET)
       .upload(path, file);
     if (!uploadError) {
-      const { data: pub } = supabase.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(path);
+      const { data: pub } = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(path);
       archivoUrl = pub.publicUrl;
     } else {
       console.error('Error subiendo archivo', uploadError);
@@ -236,7 +236,7 @@ async function submitQuiz(autoSubmitted) {
 
   const comentario = document.getElementById('input-comment').value.trim();
 
-  const { error } = await supabase.from('intentos').insert({
+  const { error } = await supabaseClient.from('intentos').insert({
     nombre: studentName,
     ip: currentIp,
     respuestas,
@@ -291,7 +291,7 @@ document.getElementById('btn-admin-login').addEventListener('click', async () =>
   const errEl = document.getElementById('admin-login-error');
   errEl.textContent = '';
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) {
     errEl.textContent = 'Correo o contraseña incorrectos.';
     return;
@@ -300,14 +300,14 @@ document.getElementById('btn-admin-login').addEventListener('click', async () =>
 });
 
 document.getElementById('btn-admin-logout').addEventListener('click', async () => {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   location.hash = '';
   showScreen('instructions');
 });
 
 async function loadAdminDashboard() {
   showScreen('admin');
-  const { data: rows, error } = await supabase
+  const { data: rows, error } = await supabaseClient
     .from('intentos')
     .select('*')
     .order('fecha', { ascending: false });
@@ -358,7 +358,7 @@ function renderAdminTable(rows) {
     input.addEventListener('change', async () => {
       const id = input.dataset.id;
       let val = input.value === '' ? null : Math.max(0, Math.min(CASE_STUDY_POINTS, parseInt(input.value, 10)));
-      const { error } = await supabase.from('intentos').update({ puntaje_manual: val }).eq('id', id);
+      const { error } = await supabaseClient.from('intentos').update({ puntaje_manual: val }).eq('id', id);
       if (error) {
         alert('No se pudo guardar la nota manual.');
       } else {
@@ -369,7 +369,7 @@ function renderAdminTable(rows) {
 }
 
 document.getElementById('btn-export-csv').addEventListener('click', async () => {
-  const { data: rows } = await supabase.from('intentos').select('*').order('fecha', { ascending: false });
+  const { data: rows } = await supabaseClient.from('intentos').select('*').order('fecha', { ascending: false });
   const header = ['Nombre', 'Fecha', 'IP', 'Automatico', 'CasoPractico', 'Total', 'Archivo'];
   const lines = [header.join(',')];
   rows.forEach(r => {
@@ -387,7 +387,7 @@ document.getElementById('btn-export-csv').addEventListener('click', async () => 
 });
 
 // Si ya hay sesión de Supabase Auth activa y entramos por #admin, saltar el login
-supabase.auth.getSession().then(({ data }) => {
+supabaseClient.auth.getSession().then(({ data }) => {
   if (location.hash === '#admin' && data.session) {
     loadAdminDashboard();
   }
