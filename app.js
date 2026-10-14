@@ -26,13 +26,17 @@ let studentName = '';
 // 1) Obtener IP pública del visitante
 // ------------------------------------------------------------
 async function getPublicIp() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4000); // no esperar más de 4 segundos
   try {
-    const res = await fetch('https://api.ipify.org?format=json');
+    const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
     const data = await res.json();
+    clearTimeout(timeout);
     return data.ip;
   } catch (e) {
-    console.error('No se pudo obtener la IP pública', e);
-    return 'desconocida-' + Math.random().toString(36).slice(2, 8);
+    clearTimeout(timeout);
+    console.error('No se pudo obtener la IP pública, se usa un identificador alterno', e);
+    return 'sin-ip-' + Math.random().toString(36).slice(2, 8);
   }
 }
 
