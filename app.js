@@ -26,16 +26,18 @@ let studentName = '';
 // 1) Obtener IP pública del visitante
 // ------------------------------------------------------------
 async function getPublicIp() {
+  console.log('[debug] pidiendo IP...');
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 4000); // no esperar más de 4 segundos
   try {
     const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
     const data = await res.json();
     clearTimeout(timeout);
+    console.log('[debug] IP obtenida:', data.ip);
     return data.ip;
   } catch (e) {
     clearTimeout(timeout);
-    console.error('No se pudo obtener la IP pública, se usa un identificador alterno', e);
+    console.error('[debug] fallo el pedido de IP, uso identificador alterno', e);
     return 'sin-ip-' + Math.random().toString(36).slice(2, 8);
   }
 }
@@ -43,34 +45,57 @@ async function getPublicIp() {
 // ------------------------------------------------------------
 // 2) Arranque: revisa si ya hay un intento local en curso o si el admin pide entrar
 // ------------------------------------------------------------
-init();
+console.log('[debug] script app.js arrancó');
+init().catch(e => console.error('[debug] init() reventó con un error:', e));
 
 async function init() {
+  console.log('[debug] init() empezó');
   if (location.hash === '#admin') {
+    console.log('[debug] hash es #admin, muestro login');
     showScreen('adminLogin');
     return;
   }
 
   currentIp = await getPublicIp();
+  console.log('[debug] currentIp =', currentIp);
 
   // Si ya tiene un examen EN CURSO en este navegador (no enviado), lo retoma
-  const saved = localStorage.getItem('quiz_session');
+  let saved = null;
+  try {
+    saved = localStorage.getItem('quiz_session');
+  } catch (e) {
+    console.error('[debug] no se pudo leer localStorage', e);
+  }
+  console.log('[debug] sesion guardada en este navegador:', saved);
+
   if (saved) {
-    const session = JSON.parse(saved);
-    if (session.ip === currentIp && !session.submitted && Date.now() < session.endTime) {
-      studentName = session.name;
-      renderQuestions();
-      showScreen('quiz');
-      startTimer(session.endTime);
-      return;
+    let session = null;
+    try {
+      session = JSON.parse(saved);
+    } catch (e) {
+      console.error('[debug] la sesion guardada estaba corrupta, la borro', e);
+      localStorage.removeItem('quiz_session');
     }
-    if (session.submitted) {
-      showBlockedScreen({ nombre: session.name, fecha: session.fecha, puntaje_auto: session.autoScore });
-      return;
+    if (session) {
+      if (session.ip === currentIp && !session.submitted && Date.now() < session.endTime) {
+        console.log('[debug] retomando examen en curso');
+        studentName = session.name;
+        renderQuestions();
+        showScreen('quiz');
+        startTimer(session.endTime);
+        return;
+      }
+      if (session.submitted) {
+        console.log('[debug] esta IP ya habia enviado la prueba (localStorage)');
+        showBlockedScreen({ nombre: session.name, fecha: session.fecha, puntaje_auto: session.autoScore });
+        return;
+      }
     }
   }
 
+  console.log('[debug] mostrando pantalla de instrucciones');
   showScreen('instructions');
+  console.log('[debug] listo');
 }
 
 // ------------------------------------------------------------
