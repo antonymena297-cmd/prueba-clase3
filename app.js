@@ -115,7 +115,7 @@ function showBlockedScreen(record) {
   document.getElementById('blocked-info').innerHTML = `
     <strong>${escapeHtml(record.nombre)}</strong><br>
     Enviada el ${new Date(record.fecha).toLocaleString('es-CR')}<br>
-    Nota automática: ${record.puntaje_auto} / 80
+    Nota automática: ${record.puntaje_auto} / ${AUTO_TOTAL}
   `;
   showScreen('blocked');
 }
